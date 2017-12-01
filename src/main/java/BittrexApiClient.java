@@ -5,6 +5,7 @@ import handlers.BittrexRetryHandler;
 import models.BittrexResponse;
 import models.Currency;
 import models.Market;
+import models.Ticker;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
@@ -13,6 +14,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.message.BasicNameValuePair;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -84,6 +86,26 @@ public class BittrexApiClient {
         return mapper.readValue(
             makeRequest( "public/getcurrencies" ),
             new TypeReference< List< Currency > >() {}
+        );
+
+    }
+
+    /**
+     * Interface to the "public/getticker" Bittrex's API operation.
+     *
+     * @param market The market of which we would like to retrieve
+     *               the ticker.
+     *
+     * @return The current tick values for a market.
+     */
+    public Ticker getTicker( String market ) throws ApiException, URISyntaxException, IOException {
+
+        return mapper.readValue(
+            makeRequest(
+                "public/getticker",
+                new BasicNameValuePair( "market", market )
+            ),
+            Ticker.class
         );
 
     }
