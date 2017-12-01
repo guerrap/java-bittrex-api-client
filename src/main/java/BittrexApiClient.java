@@ -1,5 +1,6 @@
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import enums.OrderBookType;
 import errors.ApiException;
 import handlers.BittrexRetryHandler;
@@ -186,6 +187,33 @@ public class BittrexApiClient {
             ),
             new TypeReference< List< Trade > >() {}
         );
+
+    }
+
+    /**
+     * Interface to the "public/buylimit" Bittrex's API operation.
+     *
+     * @param   market   The market on which we would like to buy.
+     * @param   quantity The quantity that we would like to buy.
+     * @param   rate     The price at which we would like to buy.
+     *
+     * @return The placed order ID.
+     */
+    public String buyWithLimit(
+        String market,
+        double quantity,
+        double rate ) throws ApiException, URISyntaxException, IOException {
+
+        ObjectNode node = MAPPER.readValue(
+            makeRequest(
+                "/market/buylimit",
+                new BasicNameValuePair( "market", market ),
+                new BasicNameValuePair( "quantity", String.valueOf( quantity ) ),
+                new BasicNameValuePair( "rate", String.valueOf( rate ) )
+            ),
+            ObjectNode.class
+        );
+        return node.get( "uuid" ).textValue();
 
     }
 
