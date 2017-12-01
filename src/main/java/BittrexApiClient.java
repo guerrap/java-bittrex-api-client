@@ -3,6 +3,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import errors.ApiException;
 import handlers.BittrexRetryHandler;
 import models.BittrexResponse;
+import models.Currency;
 import models.Market;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -13,6 +14,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.HttpClientBuilder;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.List;
 
@@ -61,11 +64,26 @@ public class BittrexApiClient {
      * @return The open and available trading markets at Bittrex along
      *         with other meta data.
      */
-    public List< Market > getMarkets() throws Exception {
+    public List< Market > getMarkets() throws ApiException, URISyntaxException, IOException {
 
         return mapper.readValue(
             makeRequest( "public/getmarkets" ),
             new TypeReference< List< Market > >() {}
+        );
+
+    }
+
+    /**
+     * Interface to the "public/getcurrencies" Bittrex's API operation.
+     *
+     * @return All the supported currencies at Bittrex along with
+     *         other meta data.
+     */
+    public List< Currency > getCurrencies() throws ApiException, URISyntaxException, IOException {
+
+        return mapper.readValue(
+            makeRequest( "public/getcurrencies" ),
+            new TypeReference< List< Currency > >() {}
         );
 
     }
@@ -80,7 +98,9 @@ public class BittrexApiClient {
      *
      * @return A serialized representation of Bittrex's response JSON response.
      */
-    private String makeRequest( String operation, NameValuePair ...parameters ) throws Exception {
+    private String makeRequest(
+        String operation,
+        NameValuePair ...parameters ) throws ApiException, URISyntaxException, IOException {
 
 
         URIBuilder apiEndpointUriBuilder = new URIBuilder()
