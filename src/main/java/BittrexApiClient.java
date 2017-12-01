@@ -2,10 +2,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import errors.ApiException;
 import handlers.BittrexRetryHandler;
-import models.BittrexResponse;
-import models.Currency;
-import models.Market;
-import models.Ticker;
+import models.*;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
@@ -106,6 +103,20 @@ public class BittrexApiClient {
                 new BasicNameValuePair( "market", market )
             ),
             Ticker.class
+        );
+
+    }
+
+    /**
+     * Interface to the "public/getmarketsummaries" Bittrex's API operation.
+     *
+     * @return The last 24 hour summary of all active exchanges.
+     */
+    public List< MarketSummary > getMarketSummaries() throws ApiException, URISyntaxException, IOException {
+
+        return mapper.readValue(
+            makeRequest( "public/getmarketsummaries" ),
+            new TypeReference< List< MarketSummary > >() {}
         );
 
     }
