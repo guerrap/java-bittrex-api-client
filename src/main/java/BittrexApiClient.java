@@ -1,5 +1,6 @@
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import enums.OrderBookType;
 import errors.ApiException;
 import handlers.BittrexRetryHandler;
 import models.*;
@@ -23,7 +24,7 @@ import java.util.List;
  */
 public class BittrexApiClient {
 
-    private static final ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private String apiKey;
     private String apiSecret;
@@ -65,7 +66,7 @@ public class BittrexApiClient {
      */
     public List< Market > getMarkets() throws ApiException, URISyntaxException, IOException {
 
-        return mapper.readValue(
+        return MAPPER.readValue(
             makeRequest( "public/getmarkets" ),
             new TypeReference< List< Market > >() {}
         );
@@ -80,7 +81,7 @@ public class BittrexApiClient {
      */
     public List< Currency > getCurrencies() throws ApiException, URISyntaxException, IOException {
 
-        return mapper.readValue(
+        return MAPPER.readValue(
             makeRequest( "public/getcurrencies" ),
             new TypeReference< List< Currency > >() {}
         );
@@ -97,7 +98,7 @@ public class BittrexApiClient {
      */
     public Ticker getTicker( String market ) throws ApiException, URISyntaxException, IOException {
 
-        return mapper.readValue(
+        return MAPPER.readValue(
             makeRequest(
                 "public/getticker",
                 new BasicNameValuePair( "market", market )
@@ -114,7 +115,7 @@ public class BittrexApiClient {
      */
     public List< MarketSummary > getMarketSummaries() throws ApiException, URISyntaxException, IOException {
 
-        return mapper.readValue(
+        return MAPPER.readValue(
             makeRequest( "public/getmarketsummaries" ),
             new TypeReference< List< MarketSummary > >() {}
         );
@@ -130,7 +131,7 @@ public class BittrexApiClient {
      */
     public MarketSummary getMarketSummary( String market ) throws ApiException, URISyntaxException, IOException {
 
-        List< MarketSummary > marketSummaries = mapper.readValue(
+        List< MarketSummary > marketSummaries = MAPPER.readValue(
             makeRequest(
                 "public/getmarketsummary",
                 new BasicNameValuePair( "market", market )
@@ -138,6 +139,33 @@ public class BittrexApiClient {
             new TypeReference< List< MarketSummary > >() {}
         );
         return marketSummaries.get( 0 );
+
+    }
+
+    /**
+     * Interface to the "public/getorderbook" Bittrex's API operation.
+     *
+     * @param market The market of which we would like to retrieve
+     *               the order book.
+     * @param type   The type of the order book that we want to
+     *               retrieve, depending on if we want only
+     *               buys, sells, or both.
+     *
+     * @return The orderbook for a given market, respecting the
+     *         given constraints.
+     */
+    public OrderBook getOrderBook(
+        String market,
+        OrderBookType type ) throws ApiException, URISyntaxException, IOException {
+
+        return MAPPER.readValue(
+            makeRequest(
+                "public/getorderbook",
+                new BasicNameValuePair( "market", market ),
+                new BasicNameValuePair( "type", type == null ? null : type.toString() )
+            ),
+            OrderBook.class
+        );
 
     }
 
@@ -194,7 +222,7 @@ public class BittrexApiClient {
             .build();
 
         HttpResponse rawResponse = httpClient.execute( httpGet );
-        BittrexResponse parsedResponse = mapper.readValue(
+        BittrexResponse parsedResponse = MAPPER.readValue(
             rawResponse.getEntity().getContent(),
             BittrexResponse.class
         );
