@@ -7,6 +7,7 @@ import java.io.IOException;
 
 public class BittrexRetryHandler implements HttpRequestRetryHandler {
 
+    // TODO: implement retry strategy.
     @Override
     public boolean retryRequest( IOException exception, int executionCount, HttpContext context ) {
         return false;

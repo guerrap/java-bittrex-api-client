@@ -1,7 +1,9 @@
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import errors.ApiException;
 import handlers.BittrexRetryHandler;
 import models.BittrexResponse;
+import models.Market;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
@@ -12,6 +14,7 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.HttpClientBuilder;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * Represents a single Bittrex API client.
@@ -25,6 +28,24 @@ public class BittrexApiClient {
 
     /**
      * Initializes a new Bittrex API client.
+     */
+    public BittrexApiClient() {
+        this( null, null );
+    }
+
+    /**
+     * Initializes a new Bittrex API client through the personal
+     * account's API key.
+     *
+     * @param apiKey The personal account API key.
+     */
+    public BittrexApiClient( String apiKey ) {
+        this( apiKey , null );
+    }
+
+    /**
+     * Initializes a new Bittrex API client through the personal
+     * account's API key and API secret.
      *
      * @param apiKey    The personal account API key.
      * @param apiSecret The personal account API secret.
@@ -32,6 +53,21 @@ public class BittrexApiClient {
     public BittrexApiClient( String apiKey, String apiSecret ) {
         this.apiKey = apiKey;
         this.apiSecret = apiSecret;
+    }
+
+    /**
+     * Interface to the "public/getmarkets" Bittrex's API operation.
+     *
+     * @return The open and available trading markets at Bittrex along
+     *         with other meta data.
+     */
+    public List< Market > getMarkets() throws Exception {
+
+        return mapper.readValue(
+            makeRequest( "public/getmarkets" ),
+            new TypeReference< List< Market > >() {}
+        );
+
     }
 
     /**
@@ -44,7 +80,7 @@ public class BittrexApiClient {
      *
      * @return A serialized representation of Bittrex's response JSON response.
      */
-    private Object makeRequest( String operation, NameValuePair ...parameters ) throws Exception {
+    private String makeRequest( String operation, NameValuePair ...parameters ) throws Exception {
 
 
         URIBuilder apiEndpointUriBuilder = new URIBuilder()
@@ -85,7 +121,7 @@ public class BittrexApiClient {
             .build();
 
         HttpResponse rawResponse = httpClient.execute( httpGet );
-        BittrexResponse parsedResponse = new ObjectMapper().readValue(
+        BittrexResponse parsedResponse = mapper.readValue(
             rawResponse.getEntity().getContent(),
             BittrexResponse.class
         );
