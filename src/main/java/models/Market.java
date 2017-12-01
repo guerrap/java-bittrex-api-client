@@ -1,10 +1,12 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.net.URL;
 import java.util.Date;
 
+@JsonIgnoreProperties( { "Notice", "IsSponsored" } )
 public class Market {
 
     @JsonProperty( "MarketCurrency" )
@@ -30,12 +32,6 @@ public class Market {
 
     @JsonProperty( "Created" )
     private Date createdAt;
-
-    @JsonProperty( "Notice" )
-    private String notice;
-
-    @JsonProperty( "IsSponsored" )
-    private boolean sponsored;
 
     @JsonProperty( "LogoUrl" )
     private URL logoUrl;
@@ -102,22 +98,6 @@ public class Market {
 
     public void setCreatedAt( Date createdAt ) {
         this.createdAt = createdAt;
-    }
-
-    public String getNotice() {
-        return notice;
-    }
-
-    public void setNotice( String notice ) {
-        this.notice = notice;
-    }
-
-    public boolean isSponsored() {
-        return sponsored;
-    }
-
-    public void setSponsored( boolean sponsored ) {
-        this.sponsored = sponsored;
     }
 
     public URL getLogoUrl() {
