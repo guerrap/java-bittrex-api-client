@@ -258,7 +258,6 @@ public class BittrexApiClient {
         String operation,
         NameValuePair ...parameters ) throws ApiException, URISyntaxException, IOException {
 
-
         URIBuilder apiEndpointUriBuilder = new URIBuilder()
             .setScheme( "https" )
             .setHost( "www.bittrex.com" )
