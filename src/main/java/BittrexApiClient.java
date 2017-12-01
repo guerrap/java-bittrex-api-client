@@ -170,6 +170,26 @@ public class BittrexApiClient {
     }
 
     /**
+     * Interface to the "public/getmarkethistory" Bittrex's API operation.
+     *
+     * @param market The market of which we would like to retrieve the history.
+     *
+     * @return The latest trades that have occured for a specific market.
+     */
+    public List< Trade > getMarketHistory(
+        String market ) throws ApiException, URISyntaxException, IOException {
+
+        return MAPPER.readValue(
+            makeRequest(
+                "public/getmarkethistory",
+                new BasicNameValuePair( "market", market )
+            ),
+            new TypeReference< List< Trade > >() {}
+        );
+
+    }
+
+    /**
      * Utility method that sends a request to the Bittrex's API, handling the
      * authentication through the API key and API secret possibly given when
      * instantiating the client itself.
