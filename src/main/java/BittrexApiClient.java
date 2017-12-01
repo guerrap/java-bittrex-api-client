@@ -110,7 +110,7 @@ public class BittrexApiClient {
     /**
      * Interface to the "public/getmarketsummaries" Bittrex's API operation.
      *
-     * @return The last 24 hour summary of all active exchanges.
+     * @return The last 24 hour summary of all active markets.
      */
     public List< MarketSummary > getMarketSummaries() throws ApiException, URISyntaxException, IOException {
 
@@ -118,6 +118,26 @@ public class BittrexApiClient {
             makeRequest( "public/getmarketsummaries" ),
             new TypeReference< List< MarketSummary > >() {}
         );
+
+    }
+
+    /**
+     * Interface to the "public/getmarketsummary" Bittrex's API operation.
+     *
+     * @param market The market of which we would like to retrieve the summary.
+     *
+     * @return The last 24 hour summary of the specified market.
+     */
+    public MarketSummary getMarketSummary( String market ) throws ApiException, URISyntaxException, IOException {
+
+        List< MarketSummary > marketSummaries = mapper.readValue(
+            makeRequest(
+                "public/getmarketsummary",
+                new BasicNameValuePair( "market", market )
+            ),
+            new TypeReference< List< MarketSummary > >() {}
+        );
+        return marketSummaries.get( 0 );
 
     }
 
