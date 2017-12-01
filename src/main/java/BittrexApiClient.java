@@ -193,13 +193,13 @@ public class BittrexApiClient {
     /**
      * Interface to the "public/buylimit" Bittrex's API operation.
      *
-     * @param   market   The market on which we would like to buy.
-     * @param   quantity The quantity that we would like to buy.
-     * @param   rate     The price at which we would like to buy.
+     * @param market   The market on which we would like to buy.
+     * @param quantity The quantity that we would like to buy.
+     * @param rate     The price at which we would like to buy.
      *
      * @return The placed order ID.
      */
-    public String buyWithLimit(
+    public String limitBuy(
         String market,
         double quantity,
         double rate ) throws ApiException, URISyntaxException, IOException {
@@ -207,6 +207,33 @@ public class BittrexApiClient {
         ObjectNode node = MAPPER.readValue(
             makeRequest(
                 "/market/buylimit",
+                new BasicNameValuePair( "market", market ),
+                new BasicNameValuePair( "quantity", String.valueOf( quantity ) ),
+                new BasicNameValuePair( "rate", String.valueOf( rate ) )
+            ),
+            ObjectNode.class
+        );
+        return node.get( "uuid" ).textValue();
+
+    }
+
+    /**
+     * Interface to the "public/selllimit" Bittrex's API operation.
+     *
+     * @param market   The market on which we would like to sell.
+     * @param quantity The quantity that we would like to sell.
+     * @param rate     The price at which we would like to sell.
+     *
+     * @return The placed order ID.
+     */
+    public String limitSell(
+        String market,
+        double quantity,
+        double rate ) throws ApiException, URISyntaxException, IOException {
+
+        ObjectNode node = MAPPER.readValue(
+            makeRequest(
+                "/market/selllimit",
                 new BasicNameValuePair( "market", market ),
                 new BasicNameValuePair( "quantity", String.valueOf( quantity ) ),
                 new BasicNameValuePair( "rate", String.valueOf( rate ) )
