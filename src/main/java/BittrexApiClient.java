@@ -393,6 +393,26 @@ public class BittrexApiClient {
     }
 
     /**
+     * Interface to the "account/getorder" Bittrex's API operation.
+     *
+     * @param id The ID of the order of which we would like to get the detail.
+     *
+     * @return The order identified by the passed ID.
+     */
+    public Order getOrder( String id ) throws ApiException, URISyntaxException, IOException, AuthenticationException {
+
+        return MAPPER.readValue(
+            makeRequest(
+                true,
+                "account/getorder",
+                new BasicNameValuePair( "uuid", id )
+            ),
+            Order.class
+        );
+
+    }
+
+    /**
      * Utility method that sends a request to the Bittrex's API, handling the
      * authentication through the API key and API secret possibly given when
      * instantiating the client itself.
