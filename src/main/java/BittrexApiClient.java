@@ -302,6 +302,23 @@ public class BittrexApiClient {
     }
 
     /**
+     * Interface to the "account/getbalances" Bittrex's API operation.
+     *
+     * @return All the balances from your account.
+     */
+    public List< Balance > getBalances() throws ApiException, URISyntaxException, IOException, AuthenticationException {
+
+        return MAPPER.readValue(
+            makeRequest(
+                true,
+                "account/getbalances"
+            ),
+            new TypeReference< List< Balance > >() {}
+        );
+
+    }
+
+    /**
      * Utility method that sends a request to the Bittrex's API, handling the
      * authentication through the API key and API secret possibly given when
      * instantiating the client itself.
