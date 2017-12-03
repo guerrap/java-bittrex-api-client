@@ -223,7 +223,7 @@ public class BittrexApiClient {
         ObjectNode node = MAPPER.readValue(
             makeRequest(
                 true,
-                "/market/buylimit",
+                "market/buylimit",
                 new BasicNameValuePair( "market", market ),
                 new BasicNameValuePair( "quantity", String.valueOf( quantity ) ),
                 new BasicNameValuePair( "rate", String.valueOf( rate ) )
@@ -251,7 +251,7 @@ public class BittrexApiClient {
         ObjectNode node = MAPPER.readValue(
             makeRequest(
                 true,
-                "/market/selllimit",
+                "market/selllimit",
                 new BasicNameValuePair( "market", market ),
                 new BasicNameValuePair( "quantity", String.valueOf( quantity ) ),
                 new BasicNameValuePair( "rate", String.valueOf( rate ) )
@@ -272,7 +272,7 @@ public class BittrexApiClient {
 
         makeRequest(
             true,
-            "/market/cancel",
+            "market/cancel",
             new BasicNameValuePair( "uuid", id )
         );
 
@@ -335,6 +335,29 @@ public class BittrexApiClient {
             ),
             Balance.class
         );
+
+    }
+
+    /**
+     * Interface to the "account/getdepositaddress" Bittrex's API operation.
+     *
+     * @param currency The currency of which we would like to retrieve
+     *                 the deposit address.
+     *
+     * @return An address for a specific currency. If one does not exist, the call will
+     *         fail and return ADDRESS_GENERATING until one is available.
+     */
+    public String getDepositAddress( String currency ) throws ApiException, URISyntaxException, IOException, AuthenticationException {
+
+        ObjectNode node = MAPPER.readValue(
+            makeRequest(
+                true,
+                "account/getdepositaddress",
+                new BasicNameValuePair( "currency", currency )
+            ),
+            ObjectNode.class
+        );
+        return node.get( "Address" ).textValue();
 
     }
 
