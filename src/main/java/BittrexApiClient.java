@@ -245,6 +245,20 @@ public class BittrexApiClient {
     }
 
     /**
+     * Interface to the "public/cancelorder" Bittrex's API operation.
+     *
+     * @param id The ID of the order we would like to cancel.
+     */
+    public void cancelOrder( String id ) throws ApiException, URISyntaxException, IOException {
+
+        makeRequest(
+            "/market/cancel",
+            new BasicNameValuePair( "uuid", id )
+        );
+
+    }
+
+    /**
      * Utility method that sends a request to the Bittrex's API, handling the
      * authentication through the API key and API secret possibly given when
      * instantiating the client itself.
