@@ -3,9 +3,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import enums.OrderBookType;
 import errors.ApiException;
+import errors.AuthenticationException;
 import handlers.BittrexRetryHandler;
 import models.*;
+import org.apache.commons.codec.Charsets;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.codec.digest.HmacAlgorithms;
+import org.apache.commons.codec.digest.HmacUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -15,8 +19,15 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -26,6 +37,12 @@ import java.util.List;
 public class BittrexApiClient {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final String API_SCHEME = "https";
+    private static final String API_HOST = "www.bittrex.com";
+    private static final String API_PATH_ROOT = "/api/v1.1/";
+    private static final String API_PARAM_TIMESTAMP = "nonce";
+    private static final String API_PARAM_API_KEY = "apikey";
+    private static final String API_PARAM_API_SIGN = "apisign";
 
     private String apiKey;
     private String apiSecret;
@@ -65,10 +82,11 @@ public class BittrexApiClient {
      * @return The open and available trading markets at Bittrex along
      *         with other meta data.
      */
-    public List< Market > getMarkets() throws ApiException, URISyntaxException, IOException {
+    public List< Market > getMarkets()
+        throws ApiException, URISyntaxException, IOException, AuthenticationException {
 
         return MAPPER.readValue(
-            makeRequest( "public/getmarkets" ),
+            makeRequest( false, "public/getmarkets" ),
             new TypeReference< List< Market > >() {}
         );
 
@@ -80,10 +98,11 @@ public class BittrexApiClient {
      * @return All the supported currencies at Bittrex along with
      *         other meta data.
      */
-    public List< Currency > getCurrencies() throws ApiException, URISyntaxException, IOException {
+    public List< Currency > getCurrencies()
+        throws ApiException, URISyntaxException, IOException, AuthenticationException {
 
         return MAPPER.readValue(
-            makeRequest( "public/getcurrencies" ),
+            makeRequest( false, "public/getcurrencies" ),
             new TypeReference< List< Currency > >() {}
         );
 
@@ -97,10 +116,12 @@ public class BittrexApiClient {
      *
      * @return The current tick values for a market.
      */
-    public Ticker getTicker( String market ) throws ApiException, URISyntaxException, IOException {
+    public Ticker getTicker(
+        String market ) throws ApiException, URISyntaxException, IOException, AuthenticationException {
 
         return MAPPER.readValue(
             makeRequest(
+                false,
                 "public/getticker",
                 new BasicNameValuePair( "market", market )
             ),
@@ -114,10 +135,11 @@ public class BittrexApiClient {
      *
      * @return The last 24 hour summary of all active markets.
      */
-    public List< MarketSummary > getMarketSummaries() throws ApiException, URISyntaxException, IOException {
+    public List< MarketSummary > getMarketSummaries()
+        throws ApiException, URISyntaxException, IOException, AuthenticationException{
 
         return MAPPER.readValue(
-            makeRequest( "public/getmarketsummaries" ),
+            makeRequest( false, "public/getmarketsummaries" ),
             new TypeReference< List< MarketSummary > >() {}
         );
 
@@ -130,10 +152,12 @@ public class BittrexApiClient {
      *
      * @return The last 24 hour summary of the specified market.
      */
-    public MarketSummary getMarketSummary( String market ) throws ApiException, URISyntaxException, IOException {
+    public MarketSummary getMarketSummary(
+        String market ) throws ApiException, URISyntaxException, IOException, AuthenticationException {
 
         List< MarketSummary > marketSummaries = MAPPER.readValue(
             makeRequest(
+                false,
                 "public/getmarketsummary",
                 new BasicNameValuePair( "market", market )
             ),
@@ -157,10 +181,11 @@ public class BittrexApiClient {
      */
     public OrderBook getOrderBook(
         String market,
-        OrderBookType type ) throws ApiException, URISyntaxException, IOException {
+        OrderBookType type ) throws ApiException, URISyntaxException, IOException, AuthenticationException {
 
         return MAPPER.readValue(
             makeRequest(
+                false,
                 "public/getorderbook",
                 new BasicNameValuePair( "market", market ),
                 new BasicNameValuePair( "type", type == null ? null : type.toString() )
@@ -178,10 +203,11 @@ public class BittrexApiClient {
      * @return The latest trades that have occured for a specific market.
      */
     public List< Trade > getMarketHistory(
-        String market ) throws ApiException, URISyntaxException, IOException {
+        String market ) throws ApiException, URISyntaxException, IOException, AuthenticationException {
 
         return MAPPER.readValue(
             makeRequest(
+                false,
                 "public/getmarkethistory",
                 new BasicNameValuePair( "market", market )
             ),
@@ -202,10 +228,11 @@ public class BittrexApiClient {
     public String limitBuy(
         String market,
         double quantity,
-        double rate ) throws ApiException, URISyntaxException, IOException {
+        double rate ) throws ApiException, URISyntaxException, IOException, AuthenticationException {
 
         ObjectNode node = MAPPER.readValue(
             makeRequest(
+                true,
                 "/market/buylimit",
                 new BasicNameValuePair( "market", market ),
                 new BasicNameValuePair( "quantity", String.valueOf( quantity ) ),
@@ -229,10 +256,11 @@ public class BittrexApiClient {
     public String limitSell(
         String market,
         double quantity,
-        double rate ) throws ApiException, URISyntaxException, IOException {
+        double rate ) throws ApiException, URISyntaxException, IOException, AuthenticationException {
 
         ObjectNode node = MAPPER.readValue(
             makeRequest(
+                true,
                 "/market/selllimit",
                 new BasicNameValuePair( "market", market ),
                 new BasicNameValuePair( "quantity", String.valueOf( quantity ) ),
@@ -249,11 +277,36 @@ public class BittrexApiClient {
      *
      * @param id The ID of the order we would like to cancel.
      */
-    public void cancelOrder( String id ) throws ApiException, URISyntaxException, IOException {
+    public void cancelOrder(
+        String id ) throws ApiException, URISyntaxException, IOException, AuthenticationException {
 
         makeRequest(
+            true,
             "/market/cancel",
             new BasicNameValuePair( "uuid", id )
+        );
+
+    }
+
+    /**
+     * Interface to the "market/getopenorders" Bittrex's API operation.
+     *
+     * @param market Optional. The market on which we would like to retrieve
+     *               the open orders.
+     *
+     * @return All the orders that you currently have opened.
+     *         A specific market can be requested (if any)
+     */
+    public List< OpenOrder > getOpenOrders(
+        String market ) throws ApiException, URISyntaxException, IOException, AuthenticationException {
+
+        return MAPPER.readValue(
+            makeRequest(
+                true,
+                "market/getopenorders",
+                new BasicNameValuePair( "market", market )
+            ),
+            new TypeReference< List< OpenOrder > >() {}
         );
 
     }
@@ -263,20 +316,26 @@ public class BittrexApiClient {
      * authentication through the API key and API secret possibly given when
      * instantiating the client itself.
      *
+     * @param signed     Used to tell if the operation must be signed using the
+     *                   {@link #apiKey} and {@link #apiSecret} or not.
      * @param operation  The Bittrex's API operation that we would like to call.
      * @param parameters The parameters which the operation takes in.
      *
      * @return A serialized representation of Bittrex's response JSON response.
      */
     private String makeRequest(
+        boolean signed,
         String operation,
-        NameValuePair ...parameters ) throws ApiException, URISyntaxException, IOException {
+        NameValuePair ...parameters ) throws ApiException, URISyntaxException, IOException, AuthenticationException {
+
+        if( signed && ( StringUtils.isEmpty( apiKey ) || StringUtils.isEmpty( apiSecret ) ) ) {
+            throw new AuthenticationException( operation );
+        }
 
         URIBuilder apiEndpointUriBuilder = new URIBuilder()
-            .setScheme( "https" )
-            .setHost( "www.bittrex.com" )
-            .setPath( "/api/v1.1/" + operation )
-            .addParameter( "nonce", String.valueOf( new Date().getTime() ) );
+            .setScheme( API_SCHEME )
+            .setHost( API_HOST )
+            .setPath( API_PATH_ROOT + operation );
 
         for( NameValuePair parameter : parameters ) {
 
@@ -290,26 +349,31 @@ public class BittrexApiClient {
 
         }
 
-        if( StringUtils.isNotEmpty( apiKey ) ) {
-            apiEndpointUriBuilder.addParameter( "apikey", apiKey );
-        }
+        String signature = null;
+        if( signed ) {
 
-        HttpGet httpGet = new HttpGet( apiEndpointUriBuilder.build() );
-        if( StringUtils.isNotEmpty( apiSecret ) ) {
+            apiEndpointUriBuilder.addParameter( API_PARAM_API_KEY, apiKey );
+            apiEndpointUriBuilder.addParameter(
+                API_PARAM_TIMESTAMP,
+                String.valueOf( new Date().getTime() )
+            );
 
-            httpGet.addHeader(
-                "apisign",
-                DigestUtils.sha512Hex( apiSecret + apiEndpointUriBuilder.build().toString() )
+            signature = new HmacUtils( HmacAlgorithms.HMAC_SHA_512, apiSecret ).hmacHex(
+                apiEndpointUriBuilder.build().toString()
             );
 
         }
 
-        HttpClient httpClient = HttpClientBuilder
-            .create()
-            .setRetryHandler( new BittrexRetryHandler() )
-            .build();
+        HttpGet httpGet = new HttpGet( apiEndpointUriBuilder.build().toString() );
+        if( signed ) {
+            httpGet.addHeader( API_PARAM_API_SIGN, signature );
+        }
 
-        HttpResponse rawResponse = httpClient.execute( httpGet );
+        HttpResponse rawResponse = HttpClientBuilder
+            .create()
+            .setServiceUnavailableRetryStrategy( new BittrexRetryHandler() )
+            .build()
+            .execute( httpGet );
         BittrexResponse parsedResponse = MAPPER.readValue(
             rawResponse.getEntity().getContent(),
             BittrexResponse.class

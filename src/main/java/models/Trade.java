@@ -2,7 +2,7 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import enums.FillType;
-import enums.OrderSide;
+import enums.OrderType;
 
 import java.util.Date;
 
@@ -27,7 +27,7 @@ public class Trade {
     private FillType fillType;
 
     @JsonProperty( "OrderType" )
-    private OrderSide side;
+    private OrderType type;
 
     public long getId() {
         return id;
@@ -77,12 +77,12 @@ public class Trade {
         this.fillType = fillType;
     }
 
-    public OrderSide getSide() {
-        return side;
+    public OrderType getType() {
+        return type;
     }
 
-    public void setSide( OrderSide side ) {
-        this.side = side;
+    public void setType( OrderType type ) {
+        this.type = type;
     }
 
 }
