@@ -319,6 +319,26 @@ public class BittrexApiClient {
     }
 
     /**
+     * Interface to the "account/getbalance" Bittrex's API operation.
+     *
+     * @param currency The currency for which we want to retrieve the balance.
+     *
+     * @return The balance from your account for a specific currency.
+     */
+    public Balance getBalance( String currency ) throws ApiException, URISyntaxException, IOException, AuthenticationException {
+
+        return MAPPER.readValue(
+            makeRequest(
+                true,
+                "account/getbalance",
+                new BasicNameValuePair( "currency", currency )
+            ),
+            Balance.class
+        );
+
+    }
+
+    /**
      * Utility method that sends a request to the Bittrex's API, handling the
      * authentication through the API key and API secret possibly given when
      * instantiating the client itself.
