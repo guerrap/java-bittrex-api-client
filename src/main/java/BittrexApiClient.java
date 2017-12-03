@@ -362,6 +362,37 @@ public class BittrexApiClient {
     }
 
     /**
+     * Interface to the "account/withdraw" Bittrex's API operation.
+     *
+     * @param currency  The currency which we would like to withdraw.
+     * @param quantity  The quantity which we would like to withdraw.
+     * @param address   The address to which we would like to withdraw.
+     * @param paymentId Optional parameter used for CryptoNotes/BitShareX/Nxt.
+     *
+     * @return The withdrawal ID.
+     */
+    public String withdraw(
+        String currency,
+        double quantity,
+        String address,
+        String paymentId ) throws ApiException, URISyntaxException, IOException, AuthenticationException {
+
+        ObjectNode node = MAPPER.readValue(
+            makeRequest(
+                true,
+                "account/withdraw",
+                new BasicNameValuePair( "currency", currency ),
+                new BasicNameValuePair( "quantity", String.valueOf( quantity ) ),
+                new BasicNameValuePair( "address", address ),
+                new BasicNameValuePair( "paymentId", paymentId )
+            ),
+            ObjectNode.class
+        );
+        return node.get( "uuid" ).textValue();
+
+    }
+
+    /**
      * Utility method that sends a request to the Bittrex's API, handling the
      * authentication through the API key and API secret possibly given when
      * instantiating the client itself.
