@@ -413,6 +413,68 @@ public class BittrexApiClient {
     }
 
     /**
+     * Interface to the "/account/getorderhistory" Bittrex's API operation.
+     *
+     * @param market Optional. The market on which we would like to retrieve
+     *               the orders history.
+     *
+     * @return The orders list for the specified market or, if omitted for all markets.
+     */
+    public List< Order > getOrderHistory( String market ) throws ApiException, URISyntaxException, IOException, AuthenticationException {
+
+        return MAPPER.readValue(
+                makeRequest(
+                        true,
+                        "account/getorderhistory",
+                        new BasicNameValuePair("market", market )
+                ),
+                new TypeReference< List< Order > >() {}
+        );
+
+    }
+
+    /**
+     * Interface to the "/account/getwithdrawalhistory" Bittrex's API operation.
+     *
+     * @param currency Optional. The currency which we would like to retrieve
+     *                 the withdrawal history for.
+     *
+     * @return The withdrawal list for the specified currency or, if omitted for all currencies.
+     */
+    public List< Withdrawal > getWithdrawalHistory( String currency ) throws ApiException, URISyntaxException, IOException, AuthenticationException {
+
+        return MAPPER.readValue(
+                makeRequest(
+                        true,
+                        "account/getwithdrawalhistory",
+                        new BasicNameValuePair("currency", currency )
+                ),
+                new TypeReference< List< Withdrawal > >() {}
+        );
+
+    }
+
+    /**
+     * Interface to the "/account/getdeposithistory" Bittrex's API operation.
+     *
+     * @param currency Optional. The currency which we would like to retrieve
+     *                 the deposit history for.
+     *
+     * @return The deposit list for the specified currency or, if omitted for all currencies.
+     */
+    public List< Deposit > getDepositHistory( String currency ) throws ApiException, URISyntaxException, IOException, AuthenticationException {
+
+        return MAPPER.readValue(
+                makeRequest(
+                        true,
+                        "account/getdeposithistory",
+                        new BasicNameValuePair("currency", currency )
+                ),
+                new TypeReference< List< Deposit > >() {}
+        );
+    }
+
+    /**
      * Utility method that sends a request to the Bittrex's API, handling the
      * authentication through the API key and API secret possibly given when
      * instantiating the client itself.
