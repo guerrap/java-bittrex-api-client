@@ -423,12 +423,12 @@ public class BittrexApiClient {
     public List< Order > getOrderHistory( String market ) throws ApiException, URISyntaxException, IOException, AuthenticationException {
 
         return MAPPER.readValue(
-                makeRequest(
-                        true,
-                        "account/getorderhistory",
-                        new BasicNameValuePair("market", market )
-                ),
-                new TypeReference< List< Order > >() {}
+            makeRequest(
+                true,
+                "account/getorderhistory",
+                new BasicNameValuePair("market", market )
+            ),
+            new TypeReference< List< Order > >() {}
         );
 
     }
@@ -444,12 +444,12 @@ public class BittrexApiClient {
     public List< Withdrawal > getWithdrawalHistory( String currency ) throws ApiException, URISyntaxException, IOException, AuthenticationException {
 
         return MAPPER.readValue(
-                makeRequest(
-                        true,
-                        "account/getwithdrawalhistory",
-                        new BasicNameValuePair("currency", currency )
-                ),
-                new TypeReference< List< Withdrawal > >() {}
+            makeRequest(
+                true,
+                "account/getwithdrawalhistory",
+                new BasicNameValuePair("currency", currency )
+            ),
+            new TypeReference< List< Withdrawal > >() {}
         );
 
     }
@@ -465,12 +465,12 @@ public class BittrexApiClient {
     public List< Deposit > getDepositHistory( String currency ) throws ApiException, URISyntaxException, IOException, AuthenticationException {
 
         return MAPPER.readValue(
-                makeRequest(
-                        true,
-                        "account/getdeposithistory",
-                        new BasicNameValuePair("currency", currency )
-                ),
-                new TypeReference< List< Deposit > >() {}
+            makeRequest(
+                true,
+                "account/getdeposithistory",
+                new BasicNameValuePair("currency", currency )
+            ),
+            new TypeReference< List< Deposit > >() {}
         );
     }
 
