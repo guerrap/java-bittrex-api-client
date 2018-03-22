@@ -426,7 +426,7 @@ public class BittrexApiClient {
             makeRequest(
                 true,
                 "account/getorderhistory",
-                new BasicNameValuePair("market", market )
+                new BasicNameValuePair( "market", market )
             ),
             new TypeReference< List< Order > >() {}
         );
@@ -447,7 +447,7 @@ public class BittrexApiClient {
             makeRequest(
                 true,
                 "account/getwithdrawalhistory",
-                new BasicNameValuePair("currency", currency )
+                new BasicNameValuePair( "currency", currency )
             ),
             new TypeReference< List< Withdrawal > >() {}
         );
@@ -468,7 +468,7 @@ public class BittrexApiClient {
             makeRequest(
                 true,
                 "account/getdeposithistory",
-                new BasicNameValuePair("currency", currency )
+                new BasicNameValuePair( "currency", currency )
             ),
             new TypeReference< List< Deposit > >() {}
         );
